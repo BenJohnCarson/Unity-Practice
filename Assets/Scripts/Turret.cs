@@ -32,6 +32,7 @@ public class Turret : MonoBehaviour {
 		GameObject[] enemies = GameObject.FindGameObjectsWithTag (enemyTag);
 		float shortestDistance = Mathf.Infinity;
 		GameObject nearestEnemy = null;
+
 		foreach(GameObject enemy in enemies) {
 			float distanceToEnemy = Vector3.Distance (transform.position, enemy.transform.position);
 			if (distanceToEnemy < shortestDistance) {
@@ -39,7 +40,10 @@ public class Turret : MonoBehaviour {
 				nearestEnemy = enemy;
 			}
 		}
+		SelectEnemy (shortestDistance, nearestEnemy);
+	}
 
+	void SelectEnemy(float shortestDistance, GameObject nearestEnemy) {
 		if (nearestEnemy != null && shortestDistance <= range) {
 			target = nearestEnemy.transform;
 		} else {
@@ -51,21 +55,27 @@ public class Turret : MonoBehaviour {
 	void Update () {
 		if (target == null)
 			return;
-		// Target lock on
+		LockOn();
+		Shoot();
+	}
+
+	void LockOn() {
 		Vector3 dir = target.position - transform.position;
 		Quaternion lookRotation = Quaternion.LookRotation (dir);
 		Vector3 rotation = Quaternion.Lerp(partToRotate.rotation, lookRotation, Time.deltaTime * turnSpeed).eulerAngles;
 		partToRotate.rotation = Quaternion.Euler (0f, rotation.y, 0f);
+	}
 
+	void Shoot() {
 		if (fireCountdown <= 0f) {
-			Shoot ();
+			FireBullet ();
 			fireCountdown = 1f / fireRate;
 		}
 
 		fireCountdown -= Time.deltaTime;
 	}
 
-	void Shoot() {
+	void FireBullet() {
 		GameObject bulletGO = (GameObject)Instantiate (bulletPrefab, firePoint.position, firePoint.rotation);
 		Bullet bullet = bulletGO.GetComponent<Bullet> ();
 
